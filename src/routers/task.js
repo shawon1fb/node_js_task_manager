@@ -41,7 +41,12 @@ router.get('/taskListQuery', auth, async (req, res) => {
         // res.send(tasks)
         await req.user.populate({
             path: 'tasks',
-            match: match
+            match: match,
+            options: {
+                limit: parseInt(req.query.limit),
+                skip: parseInt(req.query.skip)
+
+            }
         }).execPopulate()
         res.send(req.user.tasks)
     } catch (e) {
