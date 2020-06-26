@@ -30,6 +30,26 @@ router.get('/tasks', auth, async (req, res) => {
     }
 })
 
+//query /taskListQuery?completed=true
+router.get('/taskListQuery', auth, async (req, res) => {
+    const match = {}
+    if (req.query.completed) {
+        match.completed = req.query.completed === 'true'
+    }
+    try {
+        // const tasks = await Task.find({owner: req.user._id})
+        // res.send(tasks)
+        await req.user.populate({
+            path: 'tasks',
+            match: match
+        }).execPopulate()
+        res.send(req.user.tasks)
+    } catch (e) {
+        res.status(500).send({"message": "server error"})
+    }
+})
+
+
 router.get('/task/:id', auth, async (req, res) => {
     const _id = req.params.id
 
