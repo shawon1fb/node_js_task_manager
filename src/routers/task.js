@@ -31,10 +31,17 @@ router.get('/tasks', auth, async (req, res) => {
 })
 
 //query /taskListQuery?completed=true
+//query /taskListQuery?limit=10&skip=10
+//query /taskListQuery?sortBy=createdAt_desc 0r createdAt_asc
 router.get('/taskListQuery', auth, async (req, res) => {
     const match = {}
+    const sort = {}
     if (req.query.completed) {
         match.completed = req.query.completed === 'true'
+    }
+    if (req.query.sortBy) {
+        const parts = req.query.sortBy.split('_')
+        sort[parts[0]] = parts[1] === 'desc' ? -1 : 1
     }
     try {
         // const tasks = await Task.find({owner: req.user._id})
@@ -44,7 +51,8 @@ router.get('/taskListQuery', auth, async (req, res) => {
             match: match,
             options: {
                 limit: parseInt(req.query.limit),
-                skip: parseInt(req.query.skip)
+                skip: parseInt(req.query.skip),
+                sort: sort
 
             }
         }).execPopulate()
