@@ -3,13 +3,16 @@ const multer = require('multer')
 const sharp = require('sharp')
 const User = require('../models/user')
 const auth = require('../middleware/auth')
+const sendEmail = require('../email/account')
 const router = new express.Router()
 
 
 router.post('/users', async (req, res) => {
     const user = new User(req.body)
     try {
+
         await user.save()
+        sendEmail.sendWelcomeEmail(user.email, user.name)
         const token = await user.generateAuthToken();
         res.status(201).send({user, token})
     } catch (e) {
@@ -102,6 +105,7 @@ router.delete('/user/delete/me', auth, async (req, res) => {
     try {
         //const user = await User.findByIdAndDelete(req.user.id)
         req.user.remove();
+        sendEmail.sendCancelEmail(req.user.email, req.user.name)
         res.send(req.user)
     } catch (e) {
         res.status(500).send({"message": "not deleted"})
@@ -137,18 +141,19 @@ router.delete('/users/me/avatar', auth, async (req, res) => {
     res.send({"message": "image delete successfully"})
 })
 
-router.get('/users/:id/avatar', async (req, res) => {
+router.get('/users/avatar', auth, async (req, res) => {
     try {
-        const user = await User.findById(req.params.id)
+        //const user = await User.findById(req.params.id)
+        const user = req.user
 
         if (!user || !user.avatar) {
-            throw new Error()
+            throw new Error("no image found")
         }
 
         res.set('Content-Type', 'image/png')
         res.send(user.avatar)
     } catch (e) {
-        res.status(404).send()
+        res.status(404).send({"message": "no image found"})
     }
 })
 

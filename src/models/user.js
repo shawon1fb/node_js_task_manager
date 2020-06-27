@@ -73,6 +73,7 @@ userSchema.methods.toJSON = function () {
     delete userObject.tokens
     delete userObject.password
     delete userObject.__v
+   // delete userObject.avatar
     return userObject
 }
 
